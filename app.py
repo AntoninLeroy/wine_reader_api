@@ -6,7 +6,7 @@ from flask_cors import CORS
 from PIL import Image
 from io import BytesIO
 from google.cloud import storage
-from tempfile import TemporaryFile
+import pathlib
 
 # Simple url to image api call prediction
 
@@ -23,6 +23,7 @@ model = keras.models.load_model("models/unet.h5")
 def readLabel():
     user_input = request.json
     url = user_input['img_url']
+    img_name = pathlib.PurePath(url).name.split(".")[0]
 
     X, img = img_url_to_input_unet(url)
     output = model.predict(X)
@@ -33,7 +34,7 @@ def readLabel():
     # write result to GCS
     # write locally
     cv2.imwrite('./tmp/tmp.jpg', unwrapped)
-    blob = bucket.blob('processed/response.jpg')
+    blob = bucket.blob('processed/{}_response.jpg'.format(img_name))
     blob.upload_from_filename('./tmp/tmp.jpg')
 
     return jsonify({
