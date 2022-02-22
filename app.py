@@ -34,11 +34,12 @@ def readLabel():
     # write result to GCS
     # write locally
     cv2.imwrite('./tmp/tmp.jpg', unwrapped)
-    blob = bucket.blob('processed/{}_response.jpg'.format(img_name))
+    blob = bucket.blob('processed/{}_unwrapped.jpg'.format(img_name))
     blob.upload_from_filename('./tmp/tmp.jpg')
 
     return jsonify({
-        "transcript" : str(unwrapped_ocr)
+        "unwrapped_ocr" : str(unwrapped_ocr),
+        "unwrapped_url" : str("https://storage.googleapis.com/plural-storage/processed/{}_unwrapped.jpg".format(img_name))
     })
 
 if __name__ == '__main__':
