@@ -4,6 +4,10 @@ import imutils
 from keras.preprocessing.image import save_img
 import pytesseract
 import PIL.Image
+from google.cloud import storage
+import os
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:/Users/leroy/Documents/work/GCP_service_account/data-science-website-338016-1e96da433073.json"
 
 BLACK_COLOR = (0, 0, 0)
 WHITE_COLOR = (255, 255, 255)
@@ -563,22 +567,46 @@ class labelVision:
         
         return unwrapped_ocr, src_ocr
 
-    def singleReadLabel(self, mask, src):
+    def singleReadLabel(self, mask, src, img_name):
+
+        client = storage.Client()
+        bucket = client.get_bucket('plural-storage')
 
         mask = cv2.cvtColor(mask,cv2.COLOR_GRAY2RGB)
         mask=cv2.resize(mask,(src.shape[1],src.shape[0]))
+        
+        # Save intermediatary result to gcs
+        save_img('./tmp/predict.jpg', mask)
+        blob = bucket.blob('processed/{}_unet_predict.jpg'.format(img_name))
+        blob.upload_from_filename('./tmp/predict.jpg')
+        
         mask = np.round(mask) #binary transform
 
         # rotate
         r_src, r_mask = self.align_vertically(src, mask)
 
         # search cylindric edges points in label structure
-        shape, _ = self.getCylinderPoints(r_mask)
+        shape, cy_mask = self.getCylinderPoints(r_mask)
+
+        # Save intermediatary result to gcs
+        cv2.imwrite('./tmp/tmp.jpg', 255 * cy_mask)
+        blob = bucket.blob('processed/{}_cylinder.jpg'.format(img_name))
+        blob.upload_from_filename('./tmp/tmp.jpg')
 
         # unwrap label
-        _, unwrapped = self.unwrapLabel(r_src, shape)
+        mesh, unwrapped = self.unwrapLabel(r_src, shape)
+
+        # Save intermediatary result to gcs
+        cv2.imwrite('./tmp/tmp.jpg', mesh)
+        blob = bucket.blob('processed/{}_mesh.jpg'.format(img_name))
+        blob.upload_from_filename('./tmp/tmp.jpg')
+
+        # Save intermediatary result to gcs
+        cv2.imwrite('./tmp/tmp.jpg', unwrapped)
+        blob = bucket.blob('processed/{}_unwrapped.jpg'.format(img_name))
+        blob.upload_from_filename('./tmp/tmp.jpg')
 
         # tesseract ocr
         unwrapped_ocr, _ = self.ocr(src, unwrapped)
         
-        return unwrapped_ocr, unwrapped
+        return unwrapped_ocr

@@ -1,11 +1,12 @@
 from wineReader.utils import *
-from wineReader.model import *
 from wineReader.labelVision import *
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from waitress import serve
 from PIL import Image
 from io import BytesIO
 from google.cloud import storage
+from tensorflow import keras
 import pathlib
 
 # Simple url to image api call prediction
@@ -13,10 +14,6 @@ import pathlib
 app = Flask(__name__)
 CORS(app)
 
-client = storage.Client()
-bucket = client.get_bucket('plural-storage')
-
-unet = Unet()
 model = keras.models.load_model("models/unet.h5")
 
 @app.route('/readLabel', methods = ['POST'])
@@ -29,18 +26,15 @@ def readLabel():
     output = model.predict(X)
 
     label = labelVision()
-    unwrapped_ocr, unwrapped = label.singleReadLabel(output[0], img)
-
-    # write result to GCS
-    # write locally
-    cv2.imwrite('./tmp/tmp.jpg', unwrapped)
-    blob = bucket.blob('processed/{}_unwrapped.jpg'.format(img_name))
-    blob.upload_from_filename('./tmp/tmp.jpg')
+    unwrapped_ocr = label.singleReadLabel(output[0], img, img_name)
 
     return jsonify({
         "unwrapped_ocr" : str(unwrapped_ocr),
+        "unet_predict_url" : str("https://storage.googleapis.com/plural-storage/processed/{}_unet_predict.jpg".format(img_name)),
+        "cylinder_url" : str("https://storage.googleapis.com/plural-storage/processed/{}_cylinder.jpg".format(img_name)),
+        "mesh_url" : str("https://storage.googleapis.com/plural-storage/processed/{}_mesh.jpg".format(img_name)),
         "unwrapped_url" : str("https://storage.googleapis.com/plural-storage/processed/{}_unwrapped.jpg".format(img_name))
     })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    serve(app, host='0.0.0.0', port=8080)
