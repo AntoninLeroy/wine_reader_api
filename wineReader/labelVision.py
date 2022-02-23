@@ -3,11 +3,7 @@ import numpy as np
 import imutils
 from keras.preprocessing.image import save_img
 import pytesseract
-import PIL.Image
 from google.cloud import storage
-import os
-
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:/Users/leroy/Documents/work/GCP_service_account/data-science-website-338016-1e96da433073.json"
 
 BLACK_COLOR = (0, 0, 0)
 WHITE_COLOR = (255, 255, 255)
