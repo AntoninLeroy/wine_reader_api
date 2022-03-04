@@ -3,7 +3,9 @@ import numpy as np
 import imutils
 from keras.preprocessing.image import save_img
 import pytesseract
+from scipy.interpolate import griddata
 from google.cloud import storage
+from math import ceil
 
 BLACK_COLOR = (0, 0, 0)
 WHITE_COLOR = (255, 255, 255)
@@ -148,7 +150,6 @@ class LabelUnwrapper(object):
         """
         Unwrap label using interpolation - more accurate method in terms of quality
         """
-        from scipy.interpolate import griddata
 
         width, height = self.get_label_size()
 
@@ -248,7 +249,7 @@ class LabelUnwrapper(object):
         for row in mesh:
             for x, y in row:
                 point = (int(round(x)), int(round(y)))
-                cv2.line(self.src_image, point, point, color=color, thickness=int((self.width*self.height)/800000))
+                cv2.line(self.src_image, point, point, color=color, thickness=ceil((self.width*self.height)/800000))
 
     def draw_poly_mask(self, color=WHITE_COLOR):
         cv2.polylines(self.src_image, np.int32([self.points]), 1, color)
@@ -508,12 +509,12 @@ class labelVision:
                 Ye = i
                 break
 
-        mask = cv2.circle(mask, (Xf, Yf), radius=int((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
-        mask = cv2.circle(mask, (Xc, Yc), radius=int((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
-        mask = cv2.circle(mask, (Xd, Yd), radius=int((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
-        mask = cv2.circle(mask, (Xa, Ya), radius=int((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
-        mask = cv2.circle(mask, (Xb, Yb), radius=int((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
-        mask = cv2.circle(mask, (Xe, Ye), radius=int((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
+        mask = cv2.circle(mask, (Xf, Yf), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
+        mask = cv2.circle(mask, (Xc, Yc), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
+        mask = cv2.circle(mask, (Xd, Yd), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
+        mask = cv2.circle(mask, (Xa, Ya), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
+        mask = cv2.circle(mask, (Xb, Yb), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
+        mask = cv2.circle(mask, (Xe, Ye), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
 
         # convert points to ratio of height and width
 
@@ -550,7 +551,7 @@ class labelVision:
 
         dst_image = unwrapper.unwrap()
         for point in unwrapper.points:
-            cv2.line(unwrapper.src_image, tuple(point), tuple(point), color=RED_COLOR, thickness=int((src.shape[0]*src.shape[1])/200000))
+            cv2.line(unwrapper.src_image, tuple(point), tuple(point), color=RED_COLOR, thickness=ceil((src.shape[0]*src.shape[1])/200000))
 
         unwrapper.draw_mesh()
 
