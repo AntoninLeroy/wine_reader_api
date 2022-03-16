@@ -249,7 +249,7 @@ class LabelUnwrapper(object):
         for row in mesh:
             for x, y in row:
                 point = (int(round(x)), int(round(y)))
-                cv2.line(self.src_image, point, point, color=color, thickness=ceil((self.width*self.height)/800000))
+                cv2.line(self.src_image, point, point, color=color, thickness=ceil(self.width*0.01))
 
     def draw_poly_mask(self, color=WHITE_COLOR):
         cv2.polylines(self.src_image, np.int32([self.points]), 1, color)
@@ -390,7 +390,7 @@ class labelVision:
             if rot_pos_black_col > init_black_col:
                 
                 # positive rotation
-                for deg in range(0,91,step):
+                for deg in range(0,40,step):
                     black_col = img.shape[1] - np.count_nonzero(imutils.rotate(img, deg).sum(axis = 0))
                     degree.append(deg)
                     to_max.append(black_col)
@@ -398,7 +398,7 @@ class labelVision:
             else:
                 
                 # negative rotation
-                for deg in range(0,-91,-step):
+                for deg in range(0,-40,-step):
                     black_col = img.shape[1] - np.count_nonzero(imutils.rotate(img, deg).sum(axis = 0))
                     degree.append(deg)
                     to_max.append(black_col)
@@ -509,12 +509,12 @@ class labelVision:
                 Ye = i
                 break
 
-        mask = cv2.circle(mask, (Xf, Yf), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
-        mask = cv2.circle(mask, (Xc, Yc), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
-        mask = cv2.circle(mask, (Xd, Yd), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
-        mask = cv2.circle(mask, (Xa, Ya), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
-        mask = cv2.circle(mask, (Xb, Yb), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
-        mask = cv2.circle(mask, (Xe, Ye), radius=ceil((y_length*x_length)/200000), color=(0, 0, 255), thickness=-1)
+        mask = cv2.circle(mask, (Xf, Yf), radius=ceil(x_length*0.02), color=(255, 0, 0), thickness=-1)
+        mask = cv2.circle(mask, (Xc, Yc), radius=ceil(x_length*0.02), color=(255, 0, 0), thickness=-1)
+        mask = cv2.circle(mask, (Xd, Yd), radius=ceil(x_length*0.02), color=(255, 0, 0), thickness=-1)
+        mask = cv2.circle(mask, (Xa, Ya), radius=ceil(x_length*0.02), color=(255, 0, 0), thickness=-1)
+        mask = cv2.circle(mask, (Xb, Yb), radius=ceil(x_length*0.02), color=(255, 0, 0), thickness=-1)
+        mask = cv2.circle(mask, (Xe, Ye), radius=ceil(x_length*0.02), color=(255, 0, 0), thickness=-1)
 
         # convert points to ratio of height and width
 
@@ -551,7 +551,7 @@ class labelVision:
 
         dst_image = unwrapper.unwrap()
         for point in unwrapper.points:
-            cv2.line(unwrapper.src_image, tuple(point), tuple(point), color=RED_COLOR, thickness=ceil((src.shape[0]*src.shape[1])/200000))
+            cv2.line(unwrapper.src_image, tuple(point), tuple(point), color=RED_COLOR, thickness=ceil(src.shape[1]*0.04))
 
         unwrapper.draw_mesh()
 
